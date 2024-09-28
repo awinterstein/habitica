@@ -659,6 +659,8 @@ import EquipmentAttributesGrid from '../inventory/equipment/attributesGrid.vue';
 import Item from '@/components/inventory/item';
 import Avatar from '@/components/avatar';
 
+import getItemInfo from '@/../../common/script/libs/getItemInfo';
+
 const dropEggs = eggs.drops;
 const dropPotions = hatchingPotions.drops;
 
@@ -923,7 +925,7 @@ export default {
       }
     },
     purchaseGems () {
-      this.$root.$emit('bv::show::modal', 'buy-gems');
+      this.$root.$emit('buyModal::showItem', getItemInfo(null, 'gem'));
     },
     async togglePinned () {
       this.isPinned = await this.$store.dispatch('user:togglePinnedItem', { type: this.item.pinType, path: this.item.path });

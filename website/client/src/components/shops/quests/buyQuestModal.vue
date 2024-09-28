@@ -440,6 +440,8 @@ import questDialogContent from './questDialogContent';
 import QuestRewards from './questRewards';
 import CloseIcon from '../../shared/closeIcon';
 
+import getItemInfo from '@/../../common/script/libs/getItemInfo';
+
 export default {
   components: {
     CloseIcon,
@@ -538,7 +540,7 @@ export default {
       this.$root.$emit('bv::hide::modal', 'buy-quest-modal');
     },
     purchaseGems () {
-      this.$root.$emit('bv::show::modal', 'buy-gems');
+      this.$root.$emit('buyModal::showItem', getItemInfo(null, 'gem'));
     },
   },
 };

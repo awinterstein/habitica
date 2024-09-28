@@ -335,7 +335,7 @@ export default function getItemInfo (
         currency: 'gold',
         path: 'special.gems',
         pinType: 'gem',
-        locked: !user.purchased.plan.customerId,
+        locked: false, // every user is with a substriction anyways on self-hosting
       };
       break;
     }
