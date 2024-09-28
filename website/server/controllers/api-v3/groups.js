@@ -193,8 +193,6 @@ api.createGroupPlan = {
     const { user } = res.locals;
     const group = new Group(Group.sanitize(req.body.groupToCreate));
 
-    req.checkBody('paymentType', res.t('paymentTypeRequired')).notEmpty();
-    req.checkBody('summary', apiError('summaryLengthExceedsMax')).isLength({ max: MAX_SUMMARY_SIZE_FOR_GUILDS });
     const validationErrors = req.validationErrors();
     if (validationErrors) throw validationErrors;
 
@@ -204,6 +202,18 @@ api.createGroupPlan = {
     user.guilds.push(group._id);
 
     const results = await Promise.all([user.save(), group.save()]);
+
+    await payments.createSubscription({
+      user,
+      customerId: 'habitrpg',
+      paymentMethod: '',
+      sub: {
+        key: 'group_monthly',
+        quantity: 100000,
+      },
+      groupId: group._id,
+    });
+
     const savedGroup = results[1];
 
     res.analytics.track('join group', {
@@ -488,9 +498,11 @@ api.updateGroup = {
     if (group.leader !== user._id && group.type === 'party') throw new NotAuthorized(res.t('messageGroupOnlyLeaderCanUpdate'));
     else if (group.leader !== user._id && !user.hasPermission('moderator')) throw new NotAuthorized(res.t('messageGroupOnlyLeaderCanUpdate'));
 
+    /*
     if (req.body.leader && req.body.leader !== user._id && group.hasNotCancelled()) {
       throw new NotAuthorized(res.t('cannotChangeLeaderWithActiveGroupPlan'));
     }
+    */
 
     const handleArrays = (currentValue, updatedValue) => {
       if (!_.isArray(currentValue)) {

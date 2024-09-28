@@ -20,11 +20,11 @@
         </span>
         <button
           class="btn btn-primary next-button"
-          :value="$t('next')"
+          :value="$t('create')"
           :disabled="!newGroupIsReady"
-          @click="stripeGroup({ group: newGroup })"
+          @click="createGroup(newGroup)"
         >
-          {{ $t('next') }}
+          {{ $t('create') }}
         </button>
       </div>
       <h2>{{ $t('createGroup') }}</h2>
@@ -76,31 +76,12 @@
         </div>
       </div>
       <div class="form-group">
-        <lockable-label
-          :text="$t('groupUse')"
-        />
-        <select-translated-array
-          :items="[
-            'groupParentChildren',
-            'groupCouple',
-            'groupFriends',
-            'groupCoworkers',
-            'groupManager',
-            'groupTeacher'
-          ]"
-          class="group-input"
-          :placeholder="'groupUseDefault'"
-          :value="newGroup.demographics"
-          @select="newGroup.demographics = $event"
-        />
-      </div>
-      <div class="form-group">
         <button
           class="btn btn-primary btn-lg btn-block btn-payment"
           :disabled="!newGroupIsReady"
-          @click="stripeGroup({ group: newGroup })"
+          @click="createGroup(newGroup)"
         >
-          {{ $t('nextPaymentMethod') }}
+          {{ $t('create') }}
         </button>
       </div>
     </div>
@@ -227,14 +208,15 @@
 </style>
 
 <script>
+import axios from 'axios';
+import pick from 'lodash/pick';
+import { CONSTANTS, setLocalSetting } from '@/libs/userlocalManager';
 import paymentsMixin from '../../mixins/payments';
 import { mapState } from '@/libs/store';
-import selectTranslatedArray from '@/components/tasks/modal-controls/selectTranslatedArray';
 import lockableLabel from '@/components/tasks/modal-controls/lockableLabel';
 
 export default {
   components: {
-    selectTranslatedArray,
     lockableLabel,
   },
   mixins: [paymentsMixin],
@@ -257,7 +239,7 @@ export default {
   computed: {
     ...mapState({ user: 'user.data' }),
     newGroupIsReady () {
-      return Boolean(this.newGroup.name) && Boolean(this.newGroup.demographics);
+      return Boolean(this.newGroup.name);
     },
     charactersRemaining () {
       const currentLength = this.newGroup.description ? this.newGroup.description.length : 0;
@@ -270,6 +252,37 @@ export default {
     },
     onHide () {
       this.sendingInProgress = false;
+    },
+    async createGroup (group) {
+      this.$root.$emit('bv::hide::modal', 'create-group');
+
+      try {
+        const response = await axios.post('/api/v4/groups/create-plan', {
+          groupToCreate: group,
+          paymentType: '',
+        });
+
+        const newGroup = response.data.data;
+        if (newGroup && newGroup._id) {
+          this.user.guilds.push(newGroup._id);
+
+          const appState = {
+            newGroup: true,
+            paymentCompleted: true,
+            group: pick(newGroup, ['_id', 'memberCount', 'name']),
+          };
+          setLocalSetting(CONSTANTS.savedAppStateValues.SAVED_APP_STATE, JSON.stringify(appState));
+
+          this.$router.push(`/group-plans/${newGroup._id}/task-information`);
+          // const habiticaUrl = `${window.location.protocol}//${window.location.host}`;
+          // window.location.assign(`${habiticaUrl}/group-plans/${newGroup._id}/task-information`);
+          return;
+        }
+
+        window.location.reload(true);
+      } catch (e) {
+        console.log(e); // eslint-disable-line no-console
+      }
     },
   },
 };

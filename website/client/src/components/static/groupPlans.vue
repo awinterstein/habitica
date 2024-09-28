@@ -15,13 +15,6 @@
           <h1 class="mt-5" v-if="upgradingGroup._id">{{ $t('upgradeYourCrew') }}</h1>
           <h1 class="mt-5" v-else>{{ $t('groupPlanTitle') }}</h1>
           <p class="mb-0">{{ $t('groupPlanDesc') }}</p>
-          <div class="pricing mt-5">
-            <span>Just</span>
-            <span class="number">$9</span>
-            <span class="bold">per month +</span>
-            <span class="number">$3</span>
-            <span class="bold">per additional member*</span>
-          </div>
           <div class="text-center">
             <button
               class="btn btn-primary cta-button white mt-4 mb-3"
@@ -30,7 +23,6 @@
               {{ $t('getStarted') }}
             </button>
           </div>
-          <p class="gray-200">{{ $t('billedMonthly') }}</p>
         </div>
         <div class="top-right"></div>
         <div class="d-flex justify-content-between align-items-middle w-100 gap-72 mb-100">
@@ -51,14 +43,6 @@
             <p>{{ $t('groupManagementControlsDesc') }}</p>
           </div>
         </div>
-        <div class="d-flex flex-column justify-content-center">
-          <img
-            class="big-gem mb-3 mx-auto"
-            src="../../assets/images/group-plans-static/big-gem@3x.png"
-          >
-          <h2 class="mt-3">{{ $t('inGameBenefits') }}</h2>
-          <p class="final-paragraph mx-auto">{{ $t('inGameBenefitsDesc') }}</p>
-        </div>
         <div class="text-center mb-128">
           <div class="bot-left"></div>
           <div class="col-6 offset-3">
@@ -68,13 +52,6 @@
             <h2 v-else class="purple-300 mt-0 mb-4">
               {{ $t('createGroupToday') }}
             </h2>
-            <div class="pricing mb-4">
-              <span>Just</span>
-              <span class="number">$9</span>
-              <span class="bold">per month +</span>
-              <span class="number">$3</span>
-              <span class="bold">per member*</span>
-            </div>
             <div class="text-center mb-3">
               <button
                 class="btn btn-primary cta-button white"
@@ -83,7 +60,6 @@
                 {{ $t('getStarted') }}
               </button>
             </div>
-            <p class="gray-200">{{ $t('billedMonthly') }}</p>
           </div>
           <div class="bot-right"></div>
         </div>
