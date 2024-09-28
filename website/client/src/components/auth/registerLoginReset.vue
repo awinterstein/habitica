@@ -16,49 +16,6 @@
           ></div>
         </div>
       </div>
-      <div class="form-group row text-center">
-        <div class="col-12 col-md-12">
-          <div
-            class="btn btn-secondary social-button"
-            @click="socialAuth('google')"
-          >
-            <div
-              class="svg-icon social-icon"
-              v-html="icons.googleIcon"
-            ></div>
-            <div
-              class="text"
-            >
-              {{ registering
-                ? $t('signUpWithSocial', {social: 'Google'})
-                : $t('loginWithSocial', {social: 'Google'}) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="form-group row text-center">
-        <div class="col-12 col-md-12">
-          <div
-            class="btn btn-secondary social-button"
-            @click="socialAuth('apple')"
-          >
-            <div
-              class="svg-icon social-icon"
-              v-html="icons.appleIcon"
-            ></div>
-            <div
-              class="text"
-            >
-              {{ registering
-                ? $t('signUpWithSocial', {social: 'Apple'})
-                : $t('loginWithSocial', {social: 'Apple'}) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="strike">
-        <span>{{ $t('or') }}</span>
-      </div>
       <div
         v-if="registering"
         class="form-group"
