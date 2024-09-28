@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-import get from 'lodash/get';
 import unlock from '@/../../common/script/ops/unlock';
 import buy from '@/../../common/script/ops/buy/buy';
 
@@ -122,37 +121,6 @@ export const avatarEditorUtilities = { // eslint-disable-line import/prefer-defa
      * array ["skin.abc", "skin.xyz"] to unlock sets
      */
     async unlock (path) {
-      const fullSet = path.indexOf(',') !== -1;
-      const isBackground = path.indexOf('background.') !== -1;
-      if (isBackground && path === 'background.') {
-        return this.set({ 'preferences.background': '' });
-      }
-
-      let cost;
-
-      if (isBackground) {
-        cost = fullSet ? 3.75 : 1.75; // (Backgrounds) 15G per set, 7G per individual
-      } else {
-        cost = fullSet ? 1.25 : 0.5; // (Hair, skin, etc) 5G per set, 2G per individual
-      }
-
-      const loginIncentives = [
-        'background.blue',
-        'background.green',
-        'background.red',
-        'background.purple',
-        'background.yellow',
-        'background.violet',
-      ];
-
-      if (loginIncentives.indexOf(path) === -1) {
-        if (fullSet) {
-          if (window.confirm(this.$t('purchaseFor', { cost: cost * 4 })) !== true) return false; // eslint-disable-line no-alert
-        } else if (!get(this.user, `purchased.${path}`)) {
-          if (window.confirm(this.$t('purchaseFor', { cost: cost * 4 })) !== true) return false; // eslint-disable-line no-alert
-        }
-      }
-
       await axios.post(`/api/v4/user/unlock?path=${path}`);
       try {
         unlock(this.user, {
