@@ -742,6 +742,8 @@ body.modal-open #habitica-menu {
 </style>
 
 <script>
+import getItemInfo from '@/../../common/script/libs/getItemInfo';
+
 import { mapState, mapGetters } from '@/libs/store';
 import { goToModForm } from '@/libs/modform';
 
@@ -844,7 +846,7 @@ export default {
       this.$root.$emit('bv::show::modal', 'create-party-modal');
     },
     showBuyGemsModal () {
-      this.$root.$emit('bv::show::modal', 'buy-gems', { alreadyTracked: true });
+      this.$root.$emit('buyModal::showItem', getItemInfo(this.user, 'gem'));
     },
     dropdownDesktop (hover) {
       if (this.isDesktop() && hover.target.classList.contains('droppable')) {
