@@ -102,31 +102,6 @@
                 {{ $t('signup') }}
               </button>
             </form>
-            <div class="strike">
-              <span>{{ $t('or') }}</span>
-            </div>
-            <div class="text-center">
-              <button
-                class="social-button"
-                @click="socialAuth('google')"
-              >
-                <div
-                  class="svg-icon social-icon"
-                  v-html="icons.googleIcon"
-                ></div>
-                <span>{{ $t('signUpWithSocial', {social: 'Google'}) }}</span>
-              </button>
-              <button
-                class="social-button"
-                @click="socialAuth('apple')"
-              >
-                <div
-                  class="svg svg-icon social-icon apple-icon color"
-                  v-html="icons.appleIcon"
-                ></div>
-                <span>{{ $t('signUpWithSocial', {social: 'Apple'}) }}</span>
-              </button>
-            </div>
           </div>
           <div class="col-12">
             <div
@@ -244,40 +219,6 @@
         <div
           class="pixel-horizontal-2 svg-icon"
           v-html="icons.pixelHorizontal2"
-        ></div>
-      </div>
-    </div>
-    <div
-      id="level-up-anywhere"
-      class="purple-3"
-    >
-      <div class="container">
-        <div class="row">
-          <div class="col-12 col-md-6 col-lg-6">
-            <div class="iphones"></div>
-          </div>
-          <div class="col-12 col-md-6 col-lg-6 text-column">
-            <h2>{{ $t('levelUpAnywhere') }}</h2>
-            <p>{{ $t('levelUpAnywhereDesc') }}</p>
-            <a
-              class="app svg-icon"
-              href="https://play.google.com/store/apps/details?id=com.habitrpg.android.habitica"
-              target="_blank"
-              v-html="icons.googlePlay"
-            ></a>
-            <a
-              class="app svg-icon"
-              href="https://itunes.apple.com/us/app/habitica-gamified-task-manager/id994882113?mt=8"
-              target="_blank"
-              v-html="icons.iosAppStore"
-            ></a>
-          </div>
-        </div>
-      </div>
-      <div class="container-fluid">
-        <div
-          class="pixel-horizontal-3 svg-icon"
-          v-html="icons.pixelHorizontal3"
         ></div>
       </div>
     </div>
