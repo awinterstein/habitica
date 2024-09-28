@@ -20,8 +20,6 @@
   "EMAIL_SERVER_URL": "http://example.com",
   "ENABLE_CONSOLE_LOGS_IN_PROD": "false",
   "ENABLE_CONSOLE_LOGS_IN_TEST": "false",
-  "FACEBOOK_KEY": "123456789012345",
-  "FACEBOOK_SECRET": "aaaabbbbccccddddeeeeffff00001111",
   "FLAG_REPORT_EMAIL": "email@example.com, email2@example.com",
   "GA_ID": "GA_ID",
   "GOOGLE_CLIENT_ID": "123456789012345",
