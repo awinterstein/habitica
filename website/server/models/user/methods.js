@@ -17,11 +17,7 @@ import {
 
 import { model as UserNotification } from '../userNotification';
 import schema from './schema'; // eslint-disable-line import/no-cycle
-import payments from '../../libs/payments/payments'; // eslint-disable-line import/no-cycle
 import * as inboxLib from '../../libs/inbox'; // eslint-disable-line import/no-cycle
-import amazonPayments from '../../libs/payments/amazon'; // eslint-disable-line import/no-cycle
-import stripePayments from '../../libs/payments/stripe'; // eslint-disable-line import/no-cycle
-import paypalPayments from '../../libs/payments/paypal'; // eslint-disable-line import/no-cycle
 import { model as NewsPost } from '../newsPost';
 import { TransactionModel as Transaction } from '../transaction';
 
@@ -320,42 +316,6 @@ schema.statics.addComputedStatsToJSONObj = function addComputedStatsToUserJSONOb
   return userStatsJSON;
 };
 
-/**
- * Cancels a subscription.
- *
- * @param  options
- * @param  options.user  The user object who is purchasing
- * @param  options.groupId  The id of the group purchasing a subscription
- * @param  options.headers  The request headers (only for Amazon subscriptions)
- * @param  options.cancellationReason  A text string to control sending an email
- *
- * @return a Promise from api.cancelSubscription()
- */
-// @TODO: There is currently a three way relation between the user,
-// payment methods and the payment helper
-// This creates some odd Dependency Injection issues. To counter that,
-// we use the user as the third layer
-// To negotiate between the payment providers and the payment helper
-// (which probably has too many responsibilities)
-// In summary, currently is is best practice to use this method to cancel a user subscription,
-// rather than calling the
-// payment helper.
-schema.methods.cancelSubscription = async function cancelSubscription (options = {}) {
-  const { plan } = this.purchased;
-
-  options.user = this;
-  if (plan.paymentMethod === amazonPayments.constants.PAYMENT_METHOD) {
-    return amazonPayments.cancelSubscription(options);
-  } if (plan.paymentMethod === stripePayments.constants.PAYMENT_METHOD) {
-    return stripePayments.cancelSubscription(options);
-  } if (plan.paymentMethod === paypalPayments.constants.PAYMENT_METHOD) {
-    return paypalPayments.subscribeCancel(options);
-  }
-  // Android and iOS subscriptions cannot be cancelled by Habitica.
-
-  return payments.cancelSubscription(options);
-};
-
 schema.methods.getUtcOffset = function getUtcOffset () {
   return common.fns.getUtcOffset(this);
 };
@@ -484,17 +444,7 @@ async function getUserGroupData (user) {
 // User is allowed to buy gems if no group has `leaderOnly.getGems` === true or if
 // its the group leader
 schema.methods.canGetGems = async function canObtainGems () {
-  const user = this;
-  const { plan } = user.purchased;
-
-  if (!user.isSubscribed() || plan.customerId !== payments.constants.GROUP_PLAN_CUSTOMER_ID) {
-    return true;
-  }
-
-  const groups = await getUserGroupData(user);
-
-  return groups
-    .every(g => !g.hasActiveGroupPlan() || g.leader === user._id || g.leaderOnly.getGems !== true);
+  return true;
 };
 
 schema.methods.isMemberOfGroupPlan = async function isMemberOfGroupPlan () {
