@@ -1,0 +1,70 @@
+name: Rebase Upstream
+on:
+  schedule:
+    - cron: "38 1 * * *" # run every night
+  workflow_dispatch: # allow manual running
+  push:
+    branches:
+      - self-host
+
+jobs:
+  Rebase:
+    runs-on: ubuntu-latest
+    outputs:
+      rebased: ${{ steps.rebase.outputs.rebased }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1000 # greater than the number of commits made in the fork
+
+      - name: Rebase on Upstream Release Branch
+        id: rebase
+        run: |
+          set -ex
+
+          UPSTREAM="HabitRPG/habitica"
+          if [ -z $UPSTREAM ]; then
+              echo ${{ github.token }} | gh auth login --with-token
+              UPSTREAM=$(gh api repos/:owner/:repo --jq .parent.full_name)
+              if [ -z $UPSTREAM ]; then echo "Can't find upstream" >&2 && exit 1; fi
+          fi
+          if [ ! $(echo $UPSTREAM | egrep '^(http|git@)') ]; then
+              UPSTREAM=https://github.com/$UPSTREAM.git
+          fi
+
+          git remote add upstream $UPSTREAM
+
+          git fetch upstream release
+
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name  "GitHub Actions"
+
+          git rebase upstream/release
+          if [ "$(git status | grep diverged)" ]; then
+              git push origin $(git branch --show-current) --force-with-lease
+              echo "rebased=true" >> $GITHUB_OUTPUT
+          else
+            echo "rebased=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+  Build:
+    needs: Rebase
+    if: needs.Rebase.outputs.rebased == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: self-host
+          fetch-depth: 1
+      - name: Build Container
+        uses: ./.github/actions/build-container
+        with:
+          version: "develop"
+          push_containers: "false"
+          create_release: "false"
+          registry_user: ${{ secrets.DOCKER_HUB_USER }}
+          registry_token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          release_access_token: ${{ secrets.ACTIONS_ACCESS_TOKEN }}

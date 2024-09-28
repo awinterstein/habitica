@@ -1,0 +1,103 @@
+name: Container
+description: Action for building the containers for a given release version
+inputs:
+  version:
+    required: true
+    description: "The version tag for which the containers should be built"
+  push_containers:
+    required: false
+    default: 'true'
+    description: "Whether the containers should be pushed to the registry after build"
+  create_release:
+    required: false
+    default: 'true'
+    description: "Whether a release should be created after building the containers"
+  registry_user:
+    required: true
+    description: "User name for the container registry"
+  registry_token:
+    required: true
+    description: "Access token for the container registry"
+  release_access_token:
+    required: true
+    description: "Access token used to create a release"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      if: inputs.create_release == 'true'
+      with:
+        ref: 'releases/v${{ inputs.version }}'
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.registry_user }}
+        password: ${{ inputs.registry_token }}
+    - name: Determine major version
+      run: echo "version_major=$(echo ${{ inputs.version }} | cut -d. \-f1)" >> $GITHUB_OUTPUT
+      shell: bash
+      id: version_major
+    - name: Build and Push Server
+      uses: docker/build-push-action@v6
+      with:
+        target: server
+        platforms: linux/amd64
+        load: true
+        push: ${{ inputs.push_containers }}
+        tags: ${{ inputs.registry_user }}/habitica-server:latest,${{ inputs.registry_user }}/habitica-server:${{ steps.version_major.outputs.version_major }},${{ inputs.registry_user }}/habitica-server:${{ inputs.version }}
+        cache-from: type=registry,ref=${{ inputs.registry_user }}/habitica-server:buildcache
+        cache-to: type=registry,ref=${{ inputs.registry_user }}/habitica-server:buildcache,mode=max
+    - name: Build and Push Client
+      uses: docker/build-push-action@v6
+      with:
+        target: client
+        platforms: linux/amd64
+        load: true
+        push: ${{ inputs.push_containers }}
+        tags: ${{ inputs.registry_user }}/habitica-client:latest,${{ inputs.registry_user }}/habitica-client:${{ steps.version_major.outputs.version_major }},${{ inputs.registry_user }}/habitica-client:${{ inputs.version }}
+        cache-from: type=registry,ref=${{ inputs.registry_user }}/habitica-server:buildcache
+        cache-to: type=registry,ref=${{ inputs.registry_user }}/habitica-server:buildcache,mode=max
+    - name: Install zip
+      uses: montudor/action-zip@v1
+    - name: Create Release Archives
+      run: |
+        mkdir -p artifacts
+
+        docker create --name server ${{ inputs.registry_user }}/habitica-server:${{ inputs.version }}
+        docker cp server:/var/lib/habitica artifacts/
+        pushd artifacts/habitica
+        zip -r ../../habitica-server-v${{ inputs.version }}.zip *
+        popd
+        cp habitica-server-v${{ inputs.version }}.zip habitica-server-latest.zip
+
+        docker create --name client ${{ inputs.registry_user }}/habitica-client:${{ inputs.version }}
+        docker cp client:/var/www artifacts/
+        pushd artifacts/www
+        zip -r ../../habitica-client-v${{ inputs.version }}.zip *
+        popd
+        cp habitica-client-v${{ inputs.version }}.zip habitica-client-latest.zip
+      shell: bash
+    - name: Create release (latest)
+      if: inputs.create_release == 'true'
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ inputs.release_access_token }}"
+        prerelease: false
+        automatic_release_tag: "latest"
+        files: |
+          habitica-server-latest.zip
+          habitica-client-latest.zip
+    - name: Create release (version)
+      if: inputs.create_release == 'true'
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ inputs.release_access_token }}"
+        prerelease: false
+        automatic_release_tag: "v${{ inputs.version }}"
+        files: |
+          habitica-server-v${{ inputs.version }}.zip
+          habitica-client-v${{ inputs.version }}.zip

@@ -1,36 +1,46 @@
 version: "3"
 services:
-
-  client:
-    build: .
-    networks:
-      - habitica
-    environment:
-      - BASE_URL=http://server:3000
-    ports:
-        - "8080:8080"
-    command: ["npm", "run", "client:dev"]
-    depends_on:
-      - server
-
   server:
-    build: .
-    ports:
-      - "3000:3000"
-    networks:
-      - habitica
-    environment:
-      - NODE_DB_URI=mongodb://mongo/habitrpg
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: server
     depends_on:
       - mongo
-
-  mongo:
-    image: mongo:3.6
-    ports:
-      - "27017:27017"
+    environment:
+      - NODE_DB_URI=mongodb://mongo/habitica # this only needs to be adapted if using a separate database
+      - BASE_URL=http://127.0.0.1:8080 # change this to the URL under which your instance will be reachable
+      - INVITE_ONLY=false # change to `true` after registration of initial users, to restrict further registrations
     networks:
       - habitica
-
+    ports:
+      - "3000:3000"
+  client:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: client
+    depends_on:
+      - server
+    networks:
+      - habitica
+    ports:
+      - "8080:80"
+  mongo:
+    image: docker.io/mongo:5.0
+    restart: unless-stopped
+    command: ["--replSet", "rs", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --port 27017 --quiet
+      interval: 10s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    networks:
+      - habitica
+    ports:
+      - "27017:27017"
 networks:
   habitica:
     driver: bridge
