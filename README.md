@@ -12,6 +12,7 @@ The following noteworthy changes were applied to the Habitica source code:
 
 - Dockerfile and Github Workflow to create the production containers for hosting
 - every user automatically gets a subscription on registration that never needs to be renewed
+- first registered used automatically gets admin rights
 - locations for buying gems with money were replaced with options to buy with gold (e.g., the quick access in the header)
 - group plans can be created without payment
 - emails are sent directly via a configured SMTP server instead of using the Mailchimp (Mandrill) web-service

@@ -155,6 +155,14 @@ async function registerLocal (req, res, { isV3 = false }) {
         passwordHashMethod: 'bcrypt',
       },
     },
+    'purchased.plan': {
+      planId: 'basic',
+      customerId: 'habitrpg',
+      dateCreated: new Date(),
+      dateUpdated: new Date(),
+      gemsBought: 0,
+    },
+    'permissions.fullAccess': ! await User.findOne().exec(), // admin access for the first registered user
     preferences: {
       language: req.language,
     },
