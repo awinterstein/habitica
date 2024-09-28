@@ -150,6 +150,10 @@ function getSet (setType, firstPath, req) {
  * checks if the user has already unlocked this item
  */
 function alreadyUnlocked (user, setType, path) {
+  if (setType === 'background') {
+    return true; // the user should just own every background (no need to buy)
+  }
+
   const isGear = setType === 'gear';
 
   return isGear
