@@ -28,6 +28,11 @@ function removePushDevice (user, pushDevice) {
 export const MAX_MESSAGE_LENGTH = 300;
 
 async function sendFCMNotification (user, pushDevice, payload) {
+  if (nconf.get('FIREBASE_PROJECT_ID') === undefined || nconf.get('FIREBASE_PROJECT_ID') === '') {
+    logger.info('Will not send push notification, because Firebase is not configured.');
+    return;
+  }
+
   const messaging = admin.messaging();
   if (messaging === undefined) {
     return;
