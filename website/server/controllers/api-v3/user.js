@@ -279,9 +279,11 @@ api.deleteUser = {
     const { feedback } = req.body;
     if (feedback && feedback.length > 10000) throw new BadRequest(`Account deletion feedback is limited to 10,000 characters. For lengthy feedback, email ${TECH_ASSISTANCE_EMAIL}.`); // @TODO localize this string
 
+    /*
     if (plan && plan.customerId && !plan.dateTerminated) {
       throw new NotAuthorized(res.t('cannotDeleteActiveAccount'));
     }
+    */
 
     if (feedback) {
       sendTxn({ email: TECH_ASSISTANCE_EMAIL }, 'admin-feedback', [
