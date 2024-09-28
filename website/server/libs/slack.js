@@ -20,7 +20,7 @@ let flagSlack;
 let subscriptionSlack;
 
 try {
-  if (IS_TEST || IS_PRODUCTION) {
+  if ((IS_TEST || IS_PRODUCTION) && SLACK_FLAGGING_URL && SLACK_SUBSCRIPTIONS_URL) {
     flagSlack = new IncomingWebhook(SLACK_FLAGGING_URL);
     subscriptionSlack = new IncomingWebhook(SLACK_SUBSCRIPTIONS_URL);
   } else {
