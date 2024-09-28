@@ -18,7 +18,6 @@ import { paymentConstants } from './constants';
 import { cancelSubscription, createSubscription } from './subscriptions'; // eslint-disable-line import/no-cycle
 
 const TECH_ASSISTANCE_EMAIL = nconf.get('EMAILS_TECH_ASSISTANCE_EMAIL');
-const JOINED_GROUP_PLAN = 'joined group plan';
 
 function _dateDiff (earlyDate, lateDate) {
   if (!earlyDate || !lateDate || moment(lateDate).isBefore(earlyDate)) return 0;
@@ -61,7 +60,6 @@ async function addSubToGroupUser (member, group) {
   const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_IOS = 'iOS_subscription';
   const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_GROUP_PLAN = 'group_plan_free_subscription';
   const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_LIFETIME_FREE = 'lifetime_free_subscription';
-  const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_NORMAL = 'normal_subscription';
   const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_UNKNOWN = 'unknown_type_of_subscription';
   const EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_NONE = 'no_subscription';
 
@@ -151,11 +149,6 @@ async function addSubToGroupUser (member, group) {
         { name: 'PREVIOUS_SUBSCRIPTION_TYPE', content: previousSubscriptionType },
       ]);
       return;
-    }
-
-    if (member.hasNotCancelled()) {
-      await member.cancelSubscription({ cancellationReason: JOINED_GROUP_PLAN });
-      previousSubscriptionType = EMAIL_TEMPLATE_SUBSCRIPTION_TYPE_NORMAL;
     }
 
     const today = new Date();

@@ -26,9 +26,6 @@ import { paymentConstants } from './constants';
 import { addSubscriptionToGroupUsers, cancelGroupUsersSubscription } from './groupPayments'; // eslint-disable-line import/no-cycle
 import { trackSubscriptionEvent } from '../localAnalytics';
 
-// @TODO: Abstract to shared/constant
-const JOINED_GROUP_PLAN = 'joined group plan';
-
 function _findMysteryItems (user, dateMoment) {
   const pushedItems = [];
   each(shared.content.gear.flat, item => {
@@ -423,12 +420,7 @@ async function cancelSubscription (data) {
 
     await cancelGroupUsersSubscription(group);
   } else {
-    // cancelling a user subscription
-    plan = data.user.purchased.plan;
-    emailType = 'cancel-subscription';
-    // When cancelling because the user joined a group plan, no cancel-subscription email is sent
-    // because the group-member-join email says the subscription is cancelled.
-    if (data.cancellationReason && data.cancellationReason === JOINED_GROUP_PLAN) sendEmail = false;
+    return;
   }
 
   if (plan.customerId === paymentConstants.GROUP_PLAN_CUSTOMER_ID) {
