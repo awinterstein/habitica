@@ -150,6 +150,11 @@ export async function sendTxn (mailingInfoArray, emailType, variables, personalV
   }
 
   if (IS_PROD && mailingInfoArray.length > 0) {
+    if (!EMAIL_SERVER.url) {
+      logger.info('Will not send email, because there is no mail server configured.');
+      return null;
+    }
+
     return got.post(`${EMAIL_SERVER.url}/job`, {
       retry: 5, // retry the http request to the email server 5 times
       timeout: 60000, // wait up to 60s before timing out
