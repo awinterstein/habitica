@@ -28,6 +28,7 @@
   "GOOGLE_CLIENT_SECRET": "aaaabbbbccccddddeeeeffff00001111",
   "IAP_GOOGLE_KEYDIR": "/path/to/google/public/key/dir/",
   "IGNORE_REDIRECT": "true",
+  "INVITE_ONLY": "true",
   "ITUNES_SHARED_SECRET": "aaaabbbbccccddddeeeeffff00001111",
   "LOGGLY_CLIENT_TOKEN": "token",
   "LOGGLY_SUBDOMAIN": "example-subdomain",
