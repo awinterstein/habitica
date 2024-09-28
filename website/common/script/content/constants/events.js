@@ -124,7 +124,8 @@ export function getRepeatingEvents (date) {
       event.end.setYear(momentDate.year() + 1);
     }
     return event;
-  }).filter(event => momentDate.isBetween(event.start, event.end));
+  }).filter(event => (!event.promo) && (!event.gemsPromo)
+      && momentDate.isBetween(event.start, event.end));
 }
 
 export const EVENTS = {
