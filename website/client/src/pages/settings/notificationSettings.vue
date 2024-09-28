@@ -107,29 +107,6 @@
           </td>
         </tr>
         <tr>
-          <td
-            v-once
-            class="bold"
-          >
-            {{ $t('baileyAnnouncement') }}
-          </td>
-          <td class="email_push_col show_bailey_col">
-            <b-popover
-              target="viewBaileyLink"
-              triggers="hover"
-              placement="right"
-              :content="$t('showBaileyPop')"
-            />
-            <a
-              id="viewBaileyLink"
-              class="show_bailey_link"
-              @click="showBailey()"
-            >
-              {{ $t('view') }}
-            </a>
-          </td>
-        </tr>
-        <tr>
           <td></td>
           <td></td>
         </tr>

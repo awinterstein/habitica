@@ -34,7 +34,6 @@
           class="dialog-disclaimer"
         >
           <span>{{ $t("americanEnglishGovern") }} </span>
-          <span v-html="$t('helpWithTranslation')"></span>
         </div>
         <div class="input-area">
           <div class="settings-label">
