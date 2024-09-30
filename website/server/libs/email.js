@@ -4,6 +4,7 @@ import { TAVERN_ID } from '../models/group'; // eslint-disable-line import/no-cy
 import { encrypt } from './encryption';
 import logger from './logger';
 import common from '../../common';
+import sendEmail from './emailSmtp';
 
 const IS_PROD = nconf.get('IS_PROD');
 const EMAIL_SERVER = {
@@ -150,10 +151,12 @@ export async function sendTxn (mailingInfoArray, emailType, variables, personalV
   }
 
   if (IS_PROD && mailingInfoArray.length > 0) {
-    if (!EMAIL_SERVER.url) {
+    if (EMAIL_SERVER.url === undefined || EMAIL_SERVER.url === '') {
       logger.info('Will not send email, because there is no mail server configured.');
       return null;
     }
+
+    return sendEmail(emailType, variables, personalVariables);
 
     return got.post(`${EMAIL_SERVER.url}/job`, {
       retry: 5, // retry the http request to the email server 5 times
