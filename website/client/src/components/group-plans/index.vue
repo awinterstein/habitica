@@ -18,15 +18,6 @@
       >
         {{ $t('groupInformation') }}
       </router-link>
-      <router-link
-        v-if="isLeader"
-        class="nav-link"
-        :to="{name: 'groupPlanBilling', params: {groupId}}"
-        exact="exact"
-        :class="{'active': $route.name === 'groupPlanBilling'}"
-      >
-        {{ $t('groupBilling') }}
-      </router-link>
     </secondary-menu>
     <div class="col-12 px-0">
       <router-view />

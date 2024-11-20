@@ -178,6 +178,7 @@
             >
               {{ $t('youHaveGroupPlan') }}
             </div>
+            <!--
             <p
               v-else
               class="text-center mb-4"
@@ -220,7 +221,8 @@
                          {months: purchasedPlanExtraMonthsDetails.months})"
             >
             </div>
-          </div>
+          </div
+          -->
           <div
             v-if="hasGiftSubscription"
             class="d-flex flex-column align-items-center mt-4"
@@ -383,6 +385,7 @@
           </div>
         </div>
       </div>
+      <!--
       <div
         v-if="hasSubscription && !hasCanceledSubscription"
         class="d-flex flex-column align-items-center mb-4 w-448p text-center"
@@ -403,7 +406,9 @@
         >
         </div>
       </div>
+      -->
     </div>
+    <!--
     <div class="d-flex flex-column justify-content-center">
       <div class="d-flex justify-content-center">
         <div class="purple-bar my-auto"></div>
@@ -439,6 +444,7 @@
         </button>
       </div>
     </div>
+    -->
   </div>
 </template>
 
