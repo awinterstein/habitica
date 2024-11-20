@@ -177,7 +177,7 @@
             </p>
             <div
               class="svg svg-icon mb-4"
-              :class="paymentMethodLogo.class"
+              :class="paymentMethodlogino.class"
               v-html="paymentMethodLogo.icon"
             >
             </div>
@@ -349,7 +349,7 @@
           </div>
         </div>
       </div>
-      <div
+      <!--<div
         v-if="hasSubscription && !hasCanceledSubscription"
         class="d-flex flex-column align-items-center mb-4 w-448p text-center"
       >
@@ -368,7 +368,7 @@
           v-html="$t(`cancelSubInfo${user.purchased.plan.paymentMethod}`)"
         >
         </div>
-      </div>
+      </div>-->
     </div>
     <div class="d-flex flex-column justify-content-center">
       <div class="d-flex justify-content-center">
