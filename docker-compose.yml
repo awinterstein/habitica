@@ -15,20 +15,10 @@ services:
       - habitica
     ports:
       - "3000:3000"
-  client:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: client
-    depends_on:
-      - server
-    networks:
-      - habitica
-    ports:
-      - "8080:80"
   mongo:
     image: docker.io/mongo:5.0
     restart: unless-stopped
+    hostname: mongo
     command: ["--replSet", "rs", "--bind_ip_all", "--port", "27017"]
     healthcheck:
       test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --port 27017 --quiet
@@ -37,10 +27,13 @@ services:
       start_period: 0s
       start_interval: 1s
       retries: 30
+    volumes:
+      - ./db:/data/db:rw
+      - ./dbconf:/data/configdb
     networks:
-      - habitica
-    ports:
-      - "27017:27017"
+      habitica:
+        aliases:
+          - mongo
 networks:
   habitica:
     driver: bridge

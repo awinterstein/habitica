@@ -31,7 +31,7 @@ Contributions to fix those or other things are very welcome!
 
 ## Simple Setup with Docker Compose
 
-Habitica needs a Mongo database, its server component (a NodeJS application) and its client component (a Vue.js application). In the simplest setup for self-hosting, there are three containers started for them, with a dependency from the client to the server to the database:
+Habitica needs a Mongo database, its server component (a NodeJS application) and its client component (a Vue.js application). In the simplest setup for self-hosting, there are two containers started for them, with a dependency from the server (that provides the server and the client component) to the database:
 
 ```mermaid
 architecture-beta
@@ -39,18 +39,16 @@ architecture-beta
 
     service db(database)[MongoDB] in containers
     service server(server)[Server] in containers
-    service client(server)[Client] in containers
 
     db:L <-- R:server
-    client:R--> L:server
 
     group host(server)[Host]
     service proxy(server)[Reverse Proxy] in host
 
-    proxy{group}:T --> B:client{group}
+    proxy{group}:T --> B:server{group}
 ```
 
-The client port could directly be exposed as port 80 on the host. However, usually a reverse proxy like Nginx would be put in front, that handles HTTPS traffic including TLS certificate handling.
+The server port could directly be exposed as port 80 on the host. However, usually a reverse proxy like Nginx would be put in front, that handles HTTPS traffic including TLS certificate handling.
 
 The following Docker Compose file can be used for setting up the containers:
 
@@ -59,31 +57,25 @@ version: "3"
 services:
   server:
     image: docker.io/awinterstein/habitica-server:latest
+    restart: unless-stopped
     depends_on:
       - mongo
     environment:
       - NODE_DB_URI=mongodb://mongo/habitica # this only needs to be adapted if using a separate database
-      - BASE_URL=http://127.0.0.1:8080 # change this to the URL under which your instance will be reachable
+      - BASE_URL=http://127.0.0.1:3000 # change this to the URL under which your instance will be reachable
       - INVITE_ONLY=false # change to `true` after registration of initial users, to restrict further registrations
       - EMAIL_SERVER_URL=mail.example.com
       - EMAIL_SERVER_PORT=587
       - EMAIL_SERVER_AUTH_USER=mail_user
       - EMAIL_SERVER_AUTH_PASSWORD=mail_password
-    networks:
-      - habitica
     ports:
       - "3000:3000"
-  client:
-    image: docker.io/awinterstein/habitica-client:latest
-    depends_on:
-      - server
     networks:
       - habitica
-    ports:
-      - "8080:80"
   mongo:
     image: docker.io/mongo:5.0
     restart: unless-stopped
+    hostname: mongo
     command: ["--replSet", "rs", "--bind_ip_all", "--port", "27017"]
     healthcheck:
       test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --port 27017 --quiet
@@ -92,15 +84,16 @@ services:
       start_period: 0s
       start_interval: 1s
       retries: 30
+    volumes:
+      - ./db:/data/db:rw
+      - ./dbconf:/data/configdb
     networks:
-      - habitica
-    ports:
-      - "27017:27017"
+      habitica:
+        aliases:
+          - mongo
 networks:
   habitica:
     driver: bridge
-
-
 ```
 
 ## Optimized Setup with Docker Compose
@@ -121,48 +114,7 @@ architecture-beta
     proxy:R --> L:client
 ```
 
-In this case, the client container (which also needs to run a web server inside), is not needed and the Docker Compose file could look like that:
-
-```yaml
-version: "3"
-services:
-  server:
-    image: docker.io/awinterstein/habitica-server:latest
-    depends_on:
-      - mongo
-    environment:
-      - NODE_DB_URI=mongodb://mongo/habitica # this only needs to be adapted if using a separate database
-      - BASE_URL=http://127.0.0.1:8080 # change this to the URL under which your instance will be reachable
-      - INVITE_ONLY=false # change to `true` after registration of initial users, to restrict further registrations
-      - EMAIL_SERVER_URL=mail.example.com
-      - EMAIL_SERVER_PORT=587
-      - EMAIL_SERVER_AUTH_USER=mail_user
-      - EMAIL_SERVER_AUTH_PASSWORD=mail_password
-    networks:
-      - habitica
-    ports:
-      - "3000:3000"
-  mongo:
-    image: docker.io/mongo:5.0
-    restart: unless-stopped
-    command: ["--replSet", "rs", "--bind_ip_all", "--port", "27017"]
-    healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --port 27017 --quiet
-      interval: 10s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
-    networks:
-      - habitica
-    ports:
-      - "27017:27017"
-networks:
-  habitica:
-    driver: bridge
-
-
-```
+Or the static client files could be served from a different host (e.g., a static file hosting).
 
 ## Readme of the Upstream Habitica Repository
 
