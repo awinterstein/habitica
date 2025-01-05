@@ -90,16 +90,16 @@ async function updateTeamTasks (team) {
   return Promise.all(toSave);
 }
 
-export default async function processTeamsCron () {
+module.exports = async function processTeamsCron() {
   const activeTeams = await Group.find({
-    'purchased.plan.customerId': { $exists: true },
+    "purchased.plan.customerId": { $exists: true },
     $or: [
-      { 'purchased.plan.dateTerminated': { $exists: false } },
-      { 'purchased.plan.dateTerminated': null },
-      { 'purchased.plan.dateTerminated': { $gt: new Date() } },
+      { "purchased.plan.dateTerminated": { $exists: false } },
+      { "purchased.plan.dateTerminated": null },
+      { "purchased.plan.dateTerminated": { $gt: new Date() } },
     ],
   }).exec();
 
   const cronPromises = activeTeams.map(updateTeamTasks);
   return Promise.all(cronPromises);
-}
+};
