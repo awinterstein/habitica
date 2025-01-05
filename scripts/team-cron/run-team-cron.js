@@ -15,7 +15,7 @@ nconf.defaults({
 
 async function main() {
   try {
-    // Connect to MongoDB and wait for connection (Not sure if this is really necessary)
+    // Connect to MongoDB and wait for connection
     await mongoose.connect("mongodb://root-mongo-1:27017/habitica", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -42,6 +42,8 @@ async function main() {
     console.log("Starting team cron processing...");
     await processTeamsCron();
     console.log("Team cron processing completed");
+
+    // Close the DB connection
     await mongoose.connection.close();
     process.exit(0);
   } catch (error) {
