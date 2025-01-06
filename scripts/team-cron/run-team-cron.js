@@ -1,22 +1,28 @@
 const mongoose = require("mongoose");
 const nconf = require("nconf");
 
-// Load config first
-// nconf.file("config.json");
+// Initialize nconf with hierarchical configuration
 
-nconf.argv().env();
+nconf
+  .argv() // Command-line arguments first
+  .env() // Environment variables second
+  .file({
+    // Configuration file third
+    file: "config.json",
+  })
+  .defaults({
+    // Default values last
+    SESSION_SECRET_KEY: null,
+    SESSION_SECRET_IV: null,
+  });
 
-// Set defaults if not found in environment
-nconf.defaults({
-  SESSION_SECRET_KEY:
-    "1234567891234567891234567891234567891234567891234567891234567891",
-  SESSION_SECRET_IV: "12345678912345678912345678912345",
-});
+// Get database URI
+const dbUri = nconf.get("NODE_DB_URI");
 
 async function main() {
   try {
     // Connect to MongoDB and wait for connection
-    await mongoose.connect("mongodb://root-mongo-1:27017/habitica", {
+    await mongoose.connect(dbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
