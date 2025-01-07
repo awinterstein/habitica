@@ -72,6 +72,7 @@ COPY --from=build /usr/src/habitica/website/ /var/lib/habitica/website/
 COPY --from=build /usr/src/habitica/package.json /var/lib/habitica/package.json
 COPY --from=build /usr/src/habitica/config.json /var/lib/habitica/config.json
 
+
 # Copy the scripts and cron job for resetting group dailies on a daily basis
 RUN mkdir -p /var/lib/habitica/scripts/
 COPY --from=build /usr/src/habitica/scripts/team-cron.js /var/lib/habitica/scripts/team-cron.js
@@ -83,6 +84,7 @@ RUN chmod 0644 /etc/cron.d/habiticateamcron
 RUN crontab /etc/cron.d/habiticateamcron
 
 CMD ["sh", "-c", "/etc/init.d/cron start && node /var/lib/habitica/website/transpiled-babel/index.js"]
+
 
 
 # Container for providing the build web component of Habitica
@@ -108,6 +110,4 @@ RUN echo -e ":80 {\n\
 	reverse_proxy @backend server:3000\n\
 	file_server\n\
 }" > /etc/caddy/Caddyfile
-
-
 
