@@ -72,8 +72,18 @@ COPY --from=build /usr/src/habitica/website/ /var/lib/habitica/website/
 COPY --from=build /usr/src/habitica/package.json /var/lib/habitica/package.json
 COPY --from=build /usr/src/habitica/config.json /var/lib/habitica/config.json
 
-CMD ["node", "/var/lib/habitica/website/transpiled-babel/index.js"]
 
+# Copy the scripts and cron job for resetting group dailies on a daily basis
+RUN mkdir -p /var/lib/habitica/scripts/
+COPY --from=build /usr/src/habitica/scripts/team-cron.js /var/lib/habitica/scripts/team-cron.js
+COPY --from=build /usr/src/habitica/scripts/team-cron/run-team-cron.js /var/lib/habitica/
+RUN apt-get update && apt-get -y install cron
+RUN mkdir -p /etc/cron.d
+COPY --from=build /usr/src/habitica/scripts/team-cron/habiticateamcron /etc/cron.d/habiticateamcron
+RUN chmod 0644 /etc/cron.d/habiticateamcron
+RUN crontab /etc/cron.d/habiticateamcron
+
+CMD sh -c 'printenv | grep -v "no_proxy" >> /etc/environment && /etc/init.d/cron start && node /var/lib/habitica/website/transpiled-babel/index.js'
 
 
 # Container for providing the build web component of Habitica

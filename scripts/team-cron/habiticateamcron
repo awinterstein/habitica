@@ -1,0 +1,1 @@
+2 * * * * . /etc/environment; cd /var/lib/habitica && /usr/local/bin/node ./run-team-cron.js >> /var/log/cron.log 2>&1
