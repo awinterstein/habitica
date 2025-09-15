@@ -98,6 +98,7 @@
                   {{ $t('continue') }}
                 </button>
               </form>
+              <!--
               <div class="strike">
                 <span>{{ $t('or') }}</span>
               </div>
@@ -123,6 +124,7 @@
                   <span>{{ $t('signUpWithSocial', {social: 'Apple'}) }}</span>
                 </button>
               </div>
+              -->
             </div>
           </div>
           <div class="col-12">
