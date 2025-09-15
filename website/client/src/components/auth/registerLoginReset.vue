@@ -20,45 +20,6 @@
           ></a>
         </div>
       </div>
-      <div class="form-group">
-        <div>
-          <div
-            class="btn btn-secondary social-button"
-            @click="proceed('google')"
-          >
-            <div
-              class="svg-icon social-icon"
-              v-html="icons.googleIcon"
-            ></div>
-            <div
-              class="text"
-            >
-              {{ $t('signUpWithSocial', {social: 'Google'}) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <div>
-          <div
-            class="btn btn-secondary social-button"
-            @click="proceed('apple')"
-          >
-            <div
-              class="svg-icon social-icon"
-              v-html="icons.appleIcon"
-            ></div>
-            <div
-              class="text"
-            >
-              {{ $t('signUpWithSocial', {social: 'Apple'}) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="strike mb-3">
-        <span>{{ $t('or') }}</span>
-      </div>
       <div
         v-if="!registering"
         class="form-group"
