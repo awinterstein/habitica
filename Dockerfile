@@ -91,6 +91,8 @@ FROM caddy AS client
 
 COPY --from=build /usr/src/habitica/website/client/dist /var/www
 
+ENV BACKEND_SERVER=server:3000
+
 RUN echo -e ":80 {\n\
 	@backend not {\n\
 		path /static/audio/\n\
@@ -106,6 +108,6 @@ RUN echo -e ":80 {\n\
 	}\n\
 \n\
 	root * /var/www\n\
-	reverse_proxy @backend server:3000\n\
+	reverse_proxy @backend {\$BACKEND_SERVER:server:3000}\n\
 	file_server\n\
 }" > /etc/caddy/Caddyfile
