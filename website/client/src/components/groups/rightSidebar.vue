@@ -31,6 +31,7 @@
               >
               </span>
             </template>
+            <!--
             <b-dropdown-item
               v-if="isLeader && !group.purchased.active && group.privacy === 'private'"
               class="selectListItem custom-hover--upgrade"
@@ -47,6 +48,7 @@
                 </span>
               </span>
             </b-dropdown-item>
+            -->
             <b-dropdown-item
               v-if="!isMember"
               class="selectListItem"
