@@ -1,4 +1,3 @@
-import moment from 'moment';
 import mongoose from 'mongoose';
 import _ from 'lodash';
 import validator from 'validator';
@@ -1439,6 +1438,7 @@ schema.methods.leave = async function leaveGroup (user, keep = 'keep-all', keepC
   const group = this;
   const update = {};
 
+  /*
   if (group.memberCount <= 1 && group.privacy === 'private' && group.hasNotCancelled()) {
     throw new NotAuthorized(shared.i18n.t('cannotDeleteActiveGroup'));
   }
@@ -1446,6 +1446,7 @@ schema.methods.leave = async function leaveGroup (user, keep = 'keep-all', keepC
   if (group.leader === user._id && group.hasNotCancelled()) {
     throw new NotAuthorized(shared.i18n.t('leaderCannotLeaveGroupWithActiveGroup'));
   }
+  */
 
   if (group.purchased.plan.customerId) {
     await payments.cancelGroupSubscriptionForUser(user, this);
@@ -1721,20 +1722,16 @@ schema.methods.checkChatSpam = function groupCheckChatSpam (user) {
 };
 
 schema.methods.hasActiveGroupPlan = function hasActiveGroupPlan () {
-  const now = new Date();
   const { plan } = this.purchased;
-  return plan && plan.customerId
-    && (!plan.dateTerminated || moment(plan.dateTerminated).isAfter(now));
+  return plan && plan.customerId;
 };
 
 schema.methods.hasNotCancelled = function hasNotCancelled () {
-  const { plan } = this.purchased;
-  return Boolean(this.hasActiveGroupPlan() && !plan.dateTerminated);
+  return this.hasActiveGroupPlan();
 };
 
 schema.methods.hasCancelled = function hasCancelled () {
-  const { plan } = this.purchased;
-  return Boolean(this.hasActiveGroupPlan() && plan.dateTerminated);
+  return !this.hasActiveGroupPlan();
 };
 
 schema.methods.updateGroupPlan = async function updateGroupPlan (removingMember) {
