@@ -52,7 +52,7 @@
     "method-override": "^3.0.0",
     "micromustache": "^8.0.3",
     "moment": "^2.29.4",
-    "moment-recur": "git://github.com/HabitRPG/moment-recur.git#d3e8e6da0806f13b74dd2e4d7d9053e6a63db119",
+    "moment-recur": "https://github.com/HabitRPG/moment-recur.git#d3e8e6da0806f13b74dd2e4d7d9053e6a63db119",
     "mongoose": "^8.23.0",
     "morgan": "^1.10.1",
     "nan": "^2.25.0",
