@@ -66,6 +66,7 @@ services:
       - EMAIL_SERVER_PORT=587
       - EMAIL_SERVER_AUTH_USER=mail_user
       - EMAIL_SERVER_AUTH_PASSWORD=mail_password
+      - ADMIN_EMAIL=mail@example.com # the sender address to send out emails
     ports:
       - "3000:3000"
     networks:
