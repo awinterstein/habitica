@@ -2,6 +2,7 @@ import nconf from 'nconf';
 import { Queue } from 'bullmq';
 import setupRedis from './redis';
 import SERVER_STATUS from './serverStatus';
+import sendEmail from './emailSmtp';
 
 let redisClient;
 const queues = {};
@@ -35,11 +36,15 @@ if (nconf.get('WORKER_REDIS_URL')) {
 }
 
 function sendJob (type, config) {
+  return sendEmail(config.data.emailType, config.data.variables, config.data.personalVariables);
+
+  /*
   if (!queues[type]) {
     return Promise.reject(new Error(`Queue ${type} does not exist`));
   }
   const { identifier, data } = config;
   return queues[type].add(identifier, data);
+  */
 }
 
 export function getRedisClient () {
