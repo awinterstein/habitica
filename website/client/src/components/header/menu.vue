@@ -307,28 +307,6 @@
               >
                 {{ $t('overview') }}
               </router-link>
-              <a
-                class="topbar-dropdown-item dropdown-item"
-                target="_blank"
-                rel="noopener noreferrer"
-                @click.prevent="openBugReportModal()"
-              >
-                {{ $t('reportBug') }}
-              </a>
-              <a
-                class="topbar-dropdown-item dropdown-item"
-                target="_blank"
-                rel="noopener noreferrer"
-                @click.prevent="openBugReportModal(true)"
-              >
-                {{ $t('askQuestion') }}
-              </a>
-              <a
-                class="topbar-dropdown-item dropdown-item"
-                href="https://docs.google.com/forms/d/e/1FAIpQLScPhrwq_7P1C6PTrI3lbvTsvqGyTNnGzp1ugi1Ml0PFee_p5g/viewform?usp=sf_link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >{{ $t('requestFeature') }}</a>
             </div>
           </li>
           <li
@@ -376,6 +354,7 @@
               >
                 {{ $t("siteBlockers") }}
               </router-link>
+              <!--
               <a
                 v-if="hasPermission(user, 'news')"
                 class="topbar-dropdown-item dropdown-item"
@@ -385,6 +364,7 @@
               >
                 {{ $t('newsroom') }}
               </a>
+              -->
             </div>
           </li>
         </b-navbar-nav>
