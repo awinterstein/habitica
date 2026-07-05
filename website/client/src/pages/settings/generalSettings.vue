@@ -25,7 +25,7 @@
         </tr>
       </table>
 
-      <h2 v-once>
+      <!--<h2 v-once>
         {{ $t('loginMethods') }}
       </h2>
 
@@ -35,7 +35,7 @@
           <td colspan="3">
           </td>
         </tr>
-      </table>
+      </table>-->
 
       <h2 v-once>
         {{ $t('site') }}
@@ -97,7 +97,7 @@ import DayStartAdjustmentSetting from './settingRows/dayStartAdjustmentSetting.v
 import AudioThemeSetting from '@/pages/settings/settingRows/audioThemeSetting.vue';
 import ClassSetting from '@/pages/settings/settingRows/classSetting.vue';
 import FixValuesSetting from '@/pages/settings/settingRows/fixValuesSetting.vue';
-import LoginMethods from '@/pages/settings/settingRows/loginMethods.vue';
+// import LoginMethods from '@/pages/settings/settingRows/loginMethods.vue';
 import { GenericUserPreferencesMixin } from '@/pages/settings/components/genericUserPreferencesMixin';
 import { mapState } from '@/libs/store';
 import SleepMode from '@/pages/settings/settingRows/sleepMode.vue';
@@ -105,7 +105,7 @@ import SleepMode from '@/pages/settings/settingRows/sleepMode.vue';
 export default {
   components: {
     SleepMode,
-    LoginMethods,
+    // LoginMethods,
     FixValuesSetting,
     ClassSetting,
     AudioThemeSetting,

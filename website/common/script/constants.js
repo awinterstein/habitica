@@ -21,10 +21,7 @@ export const CHAT_FLAG_FROM_MOD = 5; // a flag from a moderator counts as this m
 export const CHAT_FLAG_FROM_SHADOW_MUTE = 10;
 // @TODO use those constants to replace hard-coded numbers
 
-export const SUPPORTED_SOCIAL_NETWORKS = [
-  { key: 'apple', name: 'Apple' },
-  { key: 'google', name: 'Google' },
-];
+export const SUPPORTED_SOCIAL_NETWORKS = [];
 
 export const GUILDS_PER_PAGE = 30; // number of guilds to return per page when using pagination
 
