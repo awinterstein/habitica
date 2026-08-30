@@ -1,3 +1,4 @@
+/*
 import nconf from 'nconf';
 import util from 'util';
 import iap from 'in-app-purchase';
@@ -27,3 +28,4 @@ export default {
   GOOGLE: iap.GOOGLE,
   APPLE: iap.APPLE,
 };
+*/
