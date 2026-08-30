@@ -1,3 +1,4 @@
+/*
 import passport from 'passport';
 import nconf from 'nconf';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -16,3 +17,4 @@ passport.use(new GoogleStrategy({
   clientID: nconf.get('GOOGLE_CLIENT_ID'),
   clientSecret: nconf.get('GOOGLE_CLIENT_SECRET'),
 }, (accessToken, refreshToken, profile, done) => done(null, profile)));
+*/
