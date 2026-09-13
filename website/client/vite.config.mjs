@@ -6,6 +6,7 @@ import { compression } from 'vite-plugin-compression2';
 import vue from '@vitejs/plugin-vue2'
 import { fileURLToPath } from 'node:url'
 import setupNconf from '../server/libs/setupNconf';
+import webfontDownload from 'vite-plugin-webfont-dl';
 
 const configFile = path.join(path.resolve(__dirname, '../../config.json'));
 setupNconf(configFile, nconf);
@@ -57,6 +58,7 @@ export default defineConfig({
     dedupe: ['moment', 'lodash', 'moment-recur'],
   },
   plugins: [
+    webfontDownload(),
     vue(),
     compression({
       filename: 'compressed/[base]',
