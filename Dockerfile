@@ -17,7 +17,17 @@ COPY ["website/client/package.json", "website/client/package-lock.json", "./webs
 RUN cd website/client/ && npm pkg set scripts.postinstall="echo \"Skipping postinstall\"" && npm install
 
 # Make the source code available in the container
-COPY . /usr/src/habitica
+COPY --exclude=.git --exclude=Dockerfile . /usr/src/habitica
+
+# Copy assets into the public directory for being included in the release
+RUN mkdir -p /usr/src/habitica/website/client/public/static/mobileApp/images/
+RUN find /usr/src/habitica/habitica-images \( -iname "*.gif" -o -iname "*.png" \) -exec cp -t /usr/src/habitica/website/client/public/static/mobileApp/images/ {} \;
+
+# Replace media URLs to AWS with relative paths
+RUN grep "https://habitica-assets.s3.amazonaws.com/" /usr/src/habitica/ -lr | xargs sed -i 's#https://habitica-assets.s3.amazonaws.com/#/static/#g'
+
+# Replace mobile app sound paths with static audio paths
+RUN grep "/static/mobileApp/sounds/" /usr/src/habitica/ -lr | xargs sed -i 's#/static/mobileApp/sounds/#/static/audio/#g'
 
 # Create configuration file (some values are needed for the client build already)
 RUN echo '{\n\
