@@ -35,8 +35,10 @@ if (nconf.get('WORKER_REDIS_URL')) {
   SERVER_STATUS.WORKER = true;
 }
 
-function sendJob (type, config) {
-  return sendEmail(config.data.emailType, config.data.variables, config.data.personalVariables);
+function sendJob(type, config) {
+  if (config && config.data && config.data.variables) {
+    return sendEmail(config.data.emailType, config.data.variables, config.data.personalVariables);
+  }
 
   /*
   if (!queues[type]) {

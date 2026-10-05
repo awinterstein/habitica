@@ -9,6 +9,10 @@ import {
   BadRequest,
   NotAuthorized,
 } from '../../libs/errors';
+import {
+  basicFields as basicGroupFields,
+  model as Group,
+} from '../../models/group';
 import * as Tasks from '../../models/task';
 import * as passwordUtils from '../../libs/password';
 import {
@@ -261,7 +265,7 @@ api.deleteUser = {
   url: '/user',
   async handler (req, res) {
     const { user } = res.locals;
-    const { plan } = user.purchased;
+    // const { plan } = user.purchased;
 
     const { password } = req.body;
     if (!password) throw new BadRequest(res.t('missingPassword'));
@@ -284,6 +288,17 @@ api.deleteUser = {
       throw new NotAuthorized(res.t('cannotDeleteActiveAccount'));
     }
     */
+
+    // delete user (this is handled by the worker server in the upstream project)
+    const types = ['party', 'guilds'];
+    const groupFields = basicGroupFields.concat(' leader memberCount purchased');
+    const groupsUserIsMemberOf = await Group.getGroups({ user, types, groupFields });
+    const groupLeavePromises = groupsUserIsMemberOf.map(group => group.leave(user, 'remove-all'));
+    await Promise.all(groupLeavePromises);
+    await Tasks.Task.deleteMany({
+      userId: user._id,
+    }).exec();
+    await user.deleteOne();
 
     if (feedback) {
       sendTxn({ email: TECH_ASSISTANCE_EMAIL }, 'admin-feedback', [
