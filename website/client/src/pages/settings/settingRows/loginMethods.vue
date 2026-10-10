@@ -105,6 +105,8 @@ export default {
     async socialAuth (network) {
       if (network === 'apple') {
         window.location.href = buildAppleAuthUrl();
+      } else if (network === 'oidc') {
+        window.location.href = '/api/v4/user/auth/oidc';
       } else {
         const auth = await hello(network).login({ scope: 'email' });
         await this.$store.dispatch('auth:socialAuth', {

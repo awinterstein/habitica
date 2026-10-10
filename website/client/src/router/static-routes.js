@@ -1,6 +1,7 @@
 // NOTE: when adding a page make sure to implement the `common:setTitle` action
 
 import { NotFoundPage } from './shared-route-imports';
+import { LOCALSTORAGE_AUTH_KEY } from '@/libs/auth';
 
 const StaticWrapper = () => import('@/components/static/staticWrapper');
 const HomePage = () => import('@/components/static/home');
@@ -30,6 +31,18 @@ export const STATIC_ROUTES = {
   path: '/static',
   component: StaticWrapper,
   children: [
+    {
+      name: 'oidcRedirect',
+      path: 'oidc-redirect',
+      meta: { requiresLogin: false },
+      beforeEnter (to) {
+        const params = new URLSearchParams(to.hash.slice(1));
+        localStorage.setItem(LOCALSTORAGE_AUTH_KEY, JSON.stringify({
+          auth: { apiId: params.get('id'), apiToken: params.get('key') },
+        }));
+        window.location.replace('/');
+      },
+    },
     {
       name: 'appleRedirect', path: 'apple-redirect', component: AppleRedirectPage, meta: { requiresLogin: false },
     },

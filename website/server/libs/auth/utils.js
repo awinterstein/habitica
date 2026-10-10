@@ -29,6 +29,9 @@ export function loginRes (user, req, res) {
     // This is a workaround for android not being able to handle sign in with apple better.
     return res.redirect(`/?id=${user._id}&key=${user.apiToken}&newUser=${user.newUser || false}`);
   }
+  if (res.locals.oidcTarget) {
+    return res.redirect(`${res.locals.oidcTarget}#id=${user._id}&key=${user.apiToken}&newUser=${user.newUser || false}`);
+  }
 
   const responseData = {
     id: user._id,
