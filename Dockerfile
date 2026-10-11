@@ -26,6 +26,9 @@ RUN find /usr/src/habitica/habitica-images \( -iname "*.gif" -o -iname "*.png" \
 # Replace media URLs to AWS with relative paths
 RUN grep "https://habitica-assets.s3.amazonaws.com/" /usr/src/habitica/ -lr | xargs sed -i 's#https://habitica-assets.s3.amazonaws.com/#/static/#g'
 
+# Replace mobile app sound paths with static audio paths
+RUN grep "/static/mobileApp/sounds/" /usr/src/habitica/ -lr | xargs sed -i 's#/static/mobileApp/sounds/#/static/audio/#g'
+
 # Create configuration file (some values are needed for the client build already)
 RUN echo '{\n\
     "BASE_URL": "http://localhost:3000",\n\
