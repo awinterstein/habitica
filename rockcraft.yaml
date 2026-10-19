@@ -1,0 +1,127 @@
+name: habitica-app
+summary: Habitica app
+description: Chiseled rock for the Habitica app, composed of server, frontend and cron jobs
+version: "1.0"
+
+base: bare
+build-base: ubuntu@24.04
+
+platforms:
+  amd64:
+
+services:
+  habitica:
+    override: replace
+    command: node website/transpiled-babel/index.js
+    startup: enabled
+    working-dir: /var/lib/habitica
+    environment:
+      NODE_ENV: production
+  cron:
+    override: replace
+    command: cron -f
+    startup: enabled
+
+
+parts:
+
+  habitica:
+    plugin: nil
+    source: .
+    build-packages:
+      - git
+      - build-essential
+      - python3
+      - libkrb5-dev
+      - nodejs
+      - npm
+    stage-packages:
+      - nodejs_bins
+    override-build: |
+#      set -eux
+
+      # Ensure git over https
+      git config --global url."https://".insteadOf git://
+
+      # Install backend deps
+      # todo should we skip postintall?
+      npm install
+
+
+      # Install frontend deps
+      cd website/client
+      # todo should we skip postintall?
+      npm install
+
+      # Go back to project root
+      cd $CRAFT_PART_BUILD
+
+      # todo do we need to copy assets, replace media urls and replace sound paths?
+
+      # Generate config.json
+      cat > config.json << 'EOF'
+      {
+      "BASE_URL": "http://localhost:3000",
+      "NODE_ENV": "production",
+      "PORT": 3000,
+      "CRON_SAFE_MODE": "false",
+      "CRON_SEMI_SAFE_MODE": "false",
+      "DISABLE_REQUEST_LOGGING": "true",
+      "EMAIL_SERVER_AUTH_PASSWORD": "",
+      "EMAIL_SERVER_AUTH_USER": "",
+      "EMAIL_SERVER_URL": null,
+      "ENABLE_CONSOLE_LOGS_IN_PROD": "true",
+      "ENABLE_CONSOLE_LOGS_IN_TEST": "false",
+      "FLAG_REPORT_EMAIL": "",
+      "IGNORE_REDIRECT": "true",
+      "INVITE_ONLY": "false",
+      "MAINTENANCE_MODE": "false",
+      "MONGODB_POOL_SIZE": "10",
+      "PATH": "bin:node_modules/.bin:/usr/local/bin:/usr/bin:/bin",
+      "PUSH_CONFIGS_APN_ENABLED": "false",
+      "SESSION_SECRET": "YOUR SECRET HERE",
+      "SESSION_SECRET_IV": "12345678912345678912345678912345",
+      "SESSION_SECRET_KEY": "1234567891234567891234567891234567891234567891234567891234567891",
+      "TRUSTED_DOMAINS": "",
+      "WEB_CONCURRENCY": 1,
+      "ENABLE_STACKDRIVER_TRACING": "false",
+      "BLOCKED_IPS": "",
+      "LOG_AMPLITUDE_EVENTS": "false",
+      "RATE_LIMITER_ENABLED": "false",
+      "CONTENT_SWITCHOVER_TIME_OFFSET": 8
+      }
+      EOF
+
+      # Build backend, then frontend
+      ./node_modules/.bin/gulp build:prod
+      npm run client:build
+
+      # Install into final location...
+      mkdir -p $CRAFT_PART_INSTALL/var/lib/habitica/website
+
+      # ...compiled output...
+      npm prune --omit=dev
+      cp -r node_modules $CRAFT_PART_INSTALL/var/lib/habitica/
+      cp -r website $CRAFT_PART_INSTALL/var/lib/habitica
+
+      cp -r content_cache $CRAFT_PART_INSTALL/var/lib/habitica
+      cp -r i18n_cache $CRAFT_PART_INSTALL/var/lib/habitica
+
+      # ...and runtime config.
+      cp config.json \
+        package.json \
+        $CRAFT_PART_INSTALL/var/lib/habitica/
+
+  cron:
+      plugin: nil
+      source: .
+      stage-packages:
+        - cron_daemon
+        - cron_config
+      override-build: |
+        mkdir -p $CRAFT_PART_INSTALL/var/run
+        mkdir -p $CRAFT_PART_INSTALL/var/spool
+
+        mkdir -p $CRAFT_PART_INSTALL/etc/cron.d
+        cp scripts/team-cron/habiticateamcron $CRAFT_PART_INSTALL/etc/cron.d/habiticateamcron
+        chmod 0644 $CRAFT_PART_INSTALL/etc/cron.d/habiticateamcron
