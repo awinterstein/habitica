@@ -38,25 +38,36 @@ parts:
     stage-packages:
       - nodejs_bins
     override-build: |
-#      set -eux
-
       # Ensure git over https
       git config --global url."https://".insteadOf git://
 
-      # Install backend deps
-      # todo should we skip postintall?
-      npm install
+      # Install backend deps, skipping the postinstall script
+      npm pkg set scripts.postinstall="echo \"Skipping postinstall\"" && npm install
 
-
-      # Install frontend deps
+      # Install frontend deps, also skipping its postinstall script
       cd website/client
-      # todo should we skip postintall?
-      npm install
+      npm pkg set scripts.postinstall="echo \"Skipping postinstall\"" && npm install
 
       # Go back to project root
       cd $CRAFT_PART_BUILD
 
-      # todo do we need to copy assets, replace media urls and replace sound paths?
+      # Populate the habitica-images submodule (pinned to the commit recorded
+      # in this repo): the rock's source copy only contains the working tree,
+      # which has an empty habitica-images/ dir unless the submodule was
+      # initialized locally. This command is a cheap no-op if it was.
+      git submodule update --init --depth 1 habitica-images
+
+      # Copy assets into the public directory for being included in the release
+      mkdir -p website/client/public/static/mobileApp/images/
+      find habitica-images \( -iname "*.gif" -o -iname "*.png" \) -exec cp -t website/client/public/static/mobileApp/images/ {} \;
+
+      # Replace media URLs to AWS with relative paths
+      # NB: `|| true` + `xargs -r` keep the build alive when nothing matches
+      # (grep exits non-zero and scriptlets run with `set -o pipefail`)
+      { grep -rl --exclude-dir=.git "https://habitica-assets.s3.amazonaws.com/" . || true; } | xargs -r sed -i 's#https://habitica-assets.s3.amazonaws.com/#/static/#g'
+
+      # Replace mobile app sound paths with static audio paths
+      { grep -rl --exclude-dir=.git "/static/mobileApp/sounds/" . || true; } | xargs -r sed -i 's#/static/mobileApp/sounds/#/static/audio/#g'
 
       # Generate config.json
       cat > config.json << 'EOF'
@@ -119,9 +130,26 @@ parts:
         - cron_daemon
         - cron_config
       override-build: |
-        mkdir -p $CRAFT_PART_INSTALL/var/run
-        mkdir -p $CRAFT_PART_INSTALL/var/spool
+        # cron writes /run/crond.reboot at startup and refuses to run without
+        # it; keep the Debian layout of /var/run as a symlink to /run
+        mkdir -p $CRAFT_PART_INSTALL/run
+        ln -sfn /run $CRAFT_PART_INSTALL/var/run
 
-        mkdir -p $CRAFT_PART_INSTALL/etc/cron.d
-        cp scripts/team-cron/habiticateamcron $CRAFT_PART_INSTALL/etc/cron.d/habiticateamcron
-        chmod 0644 $CRAFT_PART_INSTALL/etc/cron.d/habiticateamcron
+        # The job command sources /etc/environment and appends to /var/log/cron.log, so both must exist
+        touch $CRAFT_PART_INSTALL/etc/environment
+        mkdir -p $CRAFT_PART_INSTALL/var/log
+
+        # Install the job as root's crontab.
+        # Placing file in /etc/cron.d won't work: files there require user field, which this doesn't have.
+        mkdir -p $CRAFT_PART_INSTALL/var/spool/cron/crontabs
+        cp scripts/team-cron/habiticateamcron $CRAFT_PART_INSTALL/var/spool/cron/crontabs/root
+
+        # The crontab hardcodes /usr/local/bin/node (the node:20 image layout);
+        # the nodejs_bins slice provides /usr/bin/node instead
+        sed -i 's#/usr/local/bin/node#/usr/bin/node#' $CRAFT_PART_INSTALL/var/spool/cron/crontabs/root
+        chmod 0600 $CRAFT_PART_INSTALL/var/spool/cron/crontabs/root
+
+        # Scripts executed by the crontab
+        mkdir -p $CRAFT_PART_INSTALL/var/lib/habitica/scripts
+        cp scripts/team-cron.js $CRAFT_PART_INSTALL/var/lib/habitica/scripts/
+        cp scripts/team-cron/run-team-cron.js $CRAFT_PART_INSTALL/var/lib/habitica/
