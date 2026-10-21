@@ -53,8 +53,8 @@ parts:
 
       # Populate the habitica-images submodule (pinned to the commit recorded
       # in this repo): the rock's source copy only contains the working tree,
-      # which has an empty habitica-images/ dir unless the submodule was
-      # initialized locally. This command is a cheap no-op if it was.
+      # which has an empty habitica-images/ dir unless the submodule was initialized locally.
+      # This command is a cheap no-op if it was.
       git submodule update --init --depth 1 habitica-images
 
       # Copy assets into the public directory for being included in the release
@@ -110,8 +110,9 @@ parts:
       # Install into final location...
       mkdir -p $CRAFT_PART_INSTALL/var/lib/habitica/website
 
-      # ...compiled output...
+      # ...compiled output (dev deps pruned first)...
       npm prune --omit=dev
+      npm --prefix website/client prune --omit=dev
       cp -r node_modules $CRAFT_PART_INSTALL/var/lib/habitica/
       cp -r website $CRAFT_PART_INSTALL/var/lib/habitica
 
