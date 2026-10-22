@@ -1,0 +1,37 @@
+services:
+  server:
+    # Chiseled rock image (see rockcraft.yaml). Build with `rockcraft pack`,
+    # then load with `sudo docker load -i habitica-app_1.0_amd64.rock`.
+    image: habitica-app:1.0
+    depends_on:
+      - mongo
+    environment:
+      - NODE_DB_URI=mongodb://mongo/habitica # this only needs to be adapted if using a separate database
+      - BASE_URL=http://127.0.0.1:8080 # change this to the URL under which your instance will be reachable
+      - INVITE_ONLY=false # change to `true` after registration of initial users, to restrict further registrations
+    networks:
+      - habitica
+    ports:
+      - "3000:3000"
+  mongo:
+    image: docker.io/mongo:latest
+    restart: unless-stopped
+    hostname: mongo
+    command: ["--replSet", "rs", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --port 27017 --quiet
+      interval: 10s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - ./mongodb-data/db:/data/db:rw,Z
+      - ./mongodb-data/dbconf:/data/configdb:Z
+    networks:
+      habitica:
+        aliases:
+          - mongo
+networks:
+  habitica:
+    driver: bridge
