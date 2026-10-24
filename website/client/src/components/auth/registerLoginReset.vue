@@ -20,6 +20,17 @@
           ></a>
         </div>
       </div>
+      <template v-if="oidcName">
+        <a
+          class="btn btn-secondary social-button form-group"
+          href="/api/v4/user/auth/oidc"
+        >
+          <div class="text">{{ $t('signUpWithSocial', { social: oidcName }) }}</div>
+        </a>
+        <div class="strike mb-3">
+          <span>{{ $t('or') }}</span>
+        </div>
+      </template>
       <div
         v-if="!registering"
         class="form-group"
@@ -523,6 +534,7 @@ export default {
         code: null,
       },
       usernameIssues: [],
+      oidcName: null,
     };
 
     data.icons = Object.freeze({
@@ -586,6 +598,7 @@ export default {
     },
   },
   mounted () {
+    axios.get('/api/v4/user/auth/oidc/config').then(res => { this.oidcName = res.data.data.name; });
     this.forgotPassword = this.$route.path.startsWith('/forgot-password');
     if (this.forgotPassword) {
       if (this.$route.query.email) {
