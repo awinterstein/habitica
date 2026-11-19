@@ -1,7 +1,9 @@
 services:
   server:
     # Chiseled rock image (see rockcraft.yaml). Build with `rockcraft pack`,
-    # then load with `sudo docker load -i habitica-app_1.0_amd64.rock`.
+    # then load with:
+    #   sudo rockcraft.skopeo copy --insecure-policy \
+    #     oci-archive:habitica-app_1.0_amd64.rock docker-daemon:habitica-app:1.0
     image: habitica-app:1.0
     depends_on:
       - mongo

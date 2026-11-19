@@ -55,10 +55,14 @@ jobs:
 
       - name: Load the rock into Docker
         run: |
-          sudo docker load -i habitica-app_*_amd64.rock || \
-            sudo rockcraft.skopeo copy --insecure-policy \
-              oci-archive:habitica-app_*_amd64.rock \
-              "docker-daemon:${ROCK_TAG}"
+          sudo rockcraft.skopeo copy --insecure-policy \
+            oci-archive:habitica-app_*_amd64.rock \
+            "docker-daemon:${ROCK_TAG}"
+          docker image inspect "${ROCK_TAG}" > /dev/null || {
+            echo "image ${ROCK_TAG} missing after load; daemon contains:"
+            docker images
+            exit 1
+          }
 
       - name: Start MongoDB (replica set, required by Habitica)
         run: |
