@@ -1,0 +1,112 @@
+name: Rock (chiseled image)
+
+# Builds the chiseled rock (rockcraft.yaml), runs the container and smoke-tests it
+
+on:
+  push:
+    branches:
+      - self-host
+      - feat/rock-creation # TEMPORARY: for testing this workflow; remove before merging
+  workflow_dispatch: # allow manual runs at any time
+
+permissions:
+  contents: read
+  issues: write # needed to open the failure-notification issue (last step)
+
+concurrency:
+  group: rock-${{ github.ref }}
+  cancel-in-progress: true # rock builds are long; supersede stale runs
+
+jobs:
+  pack-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true # the build needs the habitica-images assets
+
+      - name: Set up LXD
+        run: |
+          snap list lxd 2>/dev/null || sudo snap install lxd
+          sudo lxd init --auto
+          sudo adduser "$USER" lxd
+
+      - name: Install rockcraft
+        run: sudo snap install rockcraft --classic
+
+      - name: Resolve image tag from rockcraft.yaml
+        run: |
+          version=$(grep '^version:' rockcraft.yaml | tr -d '" ' | cut -d: -f2)
+          echo "ROCK_TAG=habitica-app:${version}" >> "$GITHUB_ENV"
+
+      # `sg lxd` picks up the lxd group membership granted above without
+      # needing a new login session
+      - name: Pack the rock
+        run: sg lxd -c "rockcraft pack"
+
+      - name: Load the rock into Docker
+        run: |
+          sudo docker load -i habitica-app_*_amd64.rock || \
+            sudo rockcraft.skopeo copy --insecure-policy \
+              oci-archive:habitica-app_*_amd64.rock \
+              "docker-daemon:${ROCK_TAG}"
+
+      - name: Start MongoDB (replica set, required by Habitica)
+        run: |
+          docker network create habitica-ci
+          docker run -d --name mongo --network habitica-ci \
+            mongo:7 --replSet rs --bind_ip_all --port 27017
+          until docker exec mongo mongosh --quiet \
+              --eval 'try { rs.status().ok } catch (e) { rs.initiate().ok }' | grep -q 1; do
+            sleep 2
+          done
+
+      - name: Start the rock
+        run: |
+          docker run -d --name habitica --network habitica-ci -p 3000:3000 \
+            -e NODE_DB_URI=mongodb://mongo/habitica \
+            -e BASE_URL=http://localhost:3000 \
+            "${ROCK_TAG}"
+
+      - name: Smoke test — API comes up
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/api/v3/status | grep -q '"status":"up"'; then
+              echo "Habitica API is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Habitica API did not come up within 5 minutes"
+          exit 1
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker ps -a || true
+          docker logs habitica || true
+
+      # Explicit failure notification: opens an issue
+      # I can volunteer to maintain the rock for now;
+      # if any issues arise with automated build, I'll take a look
+      - name: Raise failure-notification issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          title="Rock build failed on ${{ github.ref_name }} (${{ github.sha }})"
+          body="The rock build/smoke test failed for commit ${{ github.sha }}.
+
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          cc @Soundarya03"
+
+          existing=$(gh issue list --search "\"${title}\" in:title state:open" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
