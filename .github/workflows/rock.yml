@@ -33,6 +33,12 @@ jobs:
           snap list lxd 2>/dev/null || sudo snap install lxd
           sudo lxd init --auto
           sudo adduser "$USER" lxd
+          # GitHub runners have Docker preinstalled, whose DROP policy on the
+          # iptables FORWARD chain silently kills LXD bridge networking
+          # (instance creation then fails with "no network access").
+          # Whitelist the LXD bridge in Docker's DOCKER-USER chain.
+          sudo iptables -I DOCKER-USER -i lxdbr0 -j ACCEPT
+          sudo iptables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
       - name: Install rockcraft
         run: sudo snap install rockcraft --classic
