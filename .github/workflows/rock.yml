@@ -1,12 +1,11 @@
 name: Rock (chiseled image)
 
 # Builds the chiseled rock (rockcraft.yaml), runs the container and smoke-tests it
-
 on:
   push:
     branches:
       - self-host
-      - feat/rock-creation # TEMPORARY: for testing this workflow; remove before merging
+      - feat/rock-creation # TODO; TEMPORARY: for testing this workflow; remove before merging
   workflow_dispatch: # allow manual runs at any time
 
 permissions:
@@ -28,58 +27,37 @@ jobs:
           fetch-depth: 1
           submodules: true # the build needs the habitica-images assets
 
-      - name: Set up LXD
+      - name: Set up Rockcraft and LXD
         run: |
           snap list lxd 2>/dev/null || sudo snap install lxd
           sudo lxd init --auto
           sudo adduser "$USER" lxd
+          sudo snap install rockcraft --classic
           # GitHub runners have Docker preinstalled, whose DROP policy on the
-          # iptables FORWARD chain silently kills LXD bridge networking
-          # (instance creation then fails with "no network access").
+          # iptables FORWARD chain silently kills LXD bridge networking.
           # Whitelist the LXD bridge in Docker's DOCKER-USER chain.
           sudo iptables -I DOCKER-USER -i lxdbr0 -j ACCEPT
           sudo iptables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-
-      - name: Install rockcraft
-        run: sudo snap install rockcraft --classic
-
-      - name: Resolve image tag from rockcraft.yaml
-        run: |
-          version=$(grep '^version:' rockcraft.yaml | tr -d '" ' | cut -d: -f2)
-          echo "ROCK_TAG=habitica-app:${version}" >> "$GITHUB_ENV"
 
       # `sg lxd` picks up the lxd group membership granted above without
       # needing a new login session
       - name: Pack the rock
         run: sg lxd -c "rockcraft pack"
 
+      # Resolve right after packing: if the .rock is missing, `ls` fails here
+      - name: Resolve rock file and version
+        run: |
+          echo "ROCK_FILE=$(ls habitica-app_*_amd64.rock)" >> "$GITHUB_ENV"
+          echo "ROCK_VERSION=$(grep '^version:' rockcraft.yaml | tr -d '" ' | cut -d: -f2)" >> "$GITHUB_ENV"
+
       - name: Load the rock into Docker
         run: |
           sudo rockcraft.skopeo copy --insecure-policy \
-            oci-archive:habitica-app_*_amd64.rock \
-            "docker-daemon:${ROCK_TAG}"
-          docker image inspect "${ROCK_TAG}" > /dev/null || {
-            echo "image ${ROCK_TAG} missing after load; daemon contains:"
-            docker images
-            exit 1
-          }
+            oci-archive:${ROCK_FILE} \
+            docker-daemon:habitica-app:${ROCK_VERSION}
 
-      - name: Start MongoDB (replica set, required by Habitica)
-        run: |
-          docker network create habitica-ci
-          docker run -d --name mongo --network habitica-ci \
-            mongo:7 --replSet rs --bind_ip_all --port 27017
-          until docker exec mongo mongosh --quiet \
-              --eval 'try { rs.status().ok } catch (e) { rs.initiate().ok }' | grep -q 1; do
-            sleep 2
-          done
-
-      - name: Start the rock
-        run: |
-          docker run -d --name habitica --network habitica-ci -p 3000:3000 \
-            -e NODE_DB_URI=mongodb://mongo/habitica \
-            -e BASE_URL=http://localhost:3000 \
-            "${ROCK_TAG}"
+      - name: Start the rock via docker compose
+        run: docker compose -f docker-compose-rock.yaml up -d
 
       - name: Smoke test — API comes up
         run: |
@@ -97,10 +75,10 @@ jobs:
         if: failure()
         run: |
           docker ps -a || true
-          docker logs habitica || true
+          docker compose -f docker-compose-rock.yaml logs || true
 
-      # Explicit failure notification: opens an issue
-      # I can volunteer to maintain the rock for now;
+      # Open an issue in case of failure
+      # I can volunteer to maintain the rock;
       # if any issues arise with automated build, I'll take a look
       - name: Raise failure-notification issue
         if: failure()

@@ -4,9 +4,10 @@ services:
     # then load with:
     #   sudo rockcraft.skopeo copy --insecure-policy \
     #     oci-archive:habitica-app_1.0_amd64.rock docker-daemon:habitica-app:1.0
-    image: habitica-app:1.0
+    image: habitica-app:${ROCK_VERSION:-1.0}
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
       - NODE_DB_URI=mongodb://mongo/habitica # this only needs to be adapted if using a separate database
       - BASE_URL=http://127.0.0.1:8080 # change this to the URL under which your instance will be reachable
